@@ -7,22 +7,19 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
-
+#include <limits.h>
+#include <chrono>
 
 // Format checker just assumes you have Alarm.bif and Solved_Alarm.bif (your file) in current directory
 using namespace std;
+using namespace chrono;
 
 ////////////////////////////////
 //// Global variables //////////
 ////////////////////////////////
 vector<vector<string> > counts;
 vector<pair<int, int> > missing;
-// convergence threshold
-float MAX_CHANGE = 0.009;
-int MIN_GOOD_VARS = 0;
-int MIN_GOOD_VAR_PERCENT = 90;
-int prev_good_var = 0;
-
+string network_file = "";
 // Our graph consists of a list of nodes where each node is represented as follows:
 class Graph_Node {
 
@@ -158,60 +155,10 @@ public:
 			vector<float> node_cpt = Alarm.get_nth_node(var_ind)->get_CPT();
 			string ret = "\ttable";
 			for (int i = 0; i < node_cpt.size(); i++) {
-				float temp = (float)((int)(node_cpt[i] * 10000)) / (float)10000;
-				ret += " " + to_string(temp);
+				ret += " " + to_string(node_cpt[i]);
 			}
 			ret += " ;";
 			return ret;
-	}
-	void initialize_min_good_required_vars(int percent)
-	{
-		MIN_GOOD_VARS = Pres_Graph.size()*percent/100;
-	}
-	float evaluate()
-    {
-		float error = 0;
-
-		ifstream myfile("solved_alarm.bif");
-		ifstream sirfile("golden_alarm.bif");
-		string myline = "", sirline = "";
-		while (myline.substr(0, 11).compare("probability") != 0)
-		{
-			getline(myfile, myline);
-			getline(sirfile, sirline);
-		}
-		// going through each variable cpt table
-		int number_of_nodes = Pres_Graph.size();
-		for (int k = 0; k < number_of_nodes; k++)
-		{
-			getline(myfile, myline); // ignoring the probability line
-			getline(sirfile, sirline); // ignoring the probability line
-			// now we have table line in string variable
-			// skiping initial space
-			int myindex = 0, sirindex = 0;
-			while (sirline[sirindex] != '0') sirindex++;
-			while (myline[myindex] != '0') myindex++;
-			// now arrived at first number
-			// going through all possible numbers
-			int my_string_length = myline.size(), sir_string_length = sirline.size(), loop_count = get_nth_node(k)->get_cpt_size();
-			for (int i = myindex, j = sirindex, l=0; l<loop_count; i++, j++, l++)
-			{
-				string my_number = "", sir_number = "";
-				// extracting my number
-				while (myline[i] != ' ') { my_number += myline[i]; i++; }
-				// extracting sir number
-				while (sirline[j] != ' ') { sir_number += sirline[j]; j++; }
-				// finding the error
-				error += abs(stof(my_number) - stof(sir_number));
-			}
-			getline(myfile, myline); // at {
-			getline(sirfile, sirline); // at {
-			getline(myfile, myline); // at prob line
-			getline(sirfile, sirline); // at prob line
-		}
-		myfile.close();
-		sirfile.close();
-		return error;
 	}
 };
 
@@ -220,7 +167,7 @@ network read_network()
 	network Alarm;
 	string line;
 	int find = 0;
-	ifstream myfile("alarm.bif");
+	ifstream myfile(network_file);
 	string temp;
 	string name;
 	vector<string> values;
@@ -353,7 +300,7 @@ vector<float> get_CPT(list<Graph_Node>::iterator node) {
 		indexes.push_back(Alarm.get_index(pars[i]));
 	}
 	for (int i = 0; i < num; i++) {
-		temp.push_back(1);
+		temp.push_back(0.06);
 	}
 	// P(A|B,C) -> temp contains first all values of A for a given B and C. 
 	//Then the next value of C with B unchnaged, all A values for this new pair of evidence.
@@ -363,9 +310,9 @@ vector<float> get_CPT(list<Graph_Node>::iterator node) {
 		for (int j = 0; j < indexes.size(); j++) 
 			match_index.push_back(get_ind_value_match(counts[i][indexes[j]], Alarm.get_nth_node(indexes[j])->get_values())); 
 		int cpt_ind = get_CPT_index(match_index, indexes);
-		temp[cpt_ind]++;
+		temp[cpt_ind] += 1.0;
 	}
-	int sum = 0;
+	float  sum = 0;
 	num /= vals.size();
 	for (int i = 0; i < num; i++) {
 		for (int j = 0; j < vals.size(); j++)
@@ -377,39 +324,13 @@ vector<float> get_CPT(list<Graph_Node>::iterator node) {
 	return temp;
 }
 
-// apply kl divergence check
-bool kl_divergence(vector<float> old_cpt, vector<float> &new_cpt)				//// ####
-{
-	int cpt_size = old_cpt.size();
-	if(cpt_size != new_cpt.size())	{ cout << "Error: sizes of new calculated cpt does not match with old cpt size.\n"; return false;}
-	float divergence_value = 0;
-	// traversing through all cpt entry
-	for(int i=0; i<cpt_size; i++)
-	{
-		//cout << old_cpt[i] << " " << new_cpt[i] << " " << log(old_cpt[i]) << " " << log(new_cpt[i]) << endl;
-		divergence_value += new_cpt[i]*(log(old_cpt[i]) - log(new_cpt[i]));
-	}
-	// check if converged
-	//cout << divergence_value << endl;
-	return (abs(divergence_value) < MAX_CHANGE);
-}
-
 bool compute_prob() {										//// ####
 	bool is_converged = false;
 	int good_var = 0;
 	for (int i = 0; i < Alarm.netSize(); i++) {
 		vector<float> new_cpt = get_CPT(Alarm.get_nth_node(i));
-		// converge only if all variable cpts converge
-		if(kl_divergence(Alarm.get_nth_node(i)->get_CPT(), new_cpt) == true)	good_var++;
 		Alarm.get_nth_node(i)->set_CPT(new_cpt);
 	}
-	cout << MIN_GOOD_VARS << endl;
-	cout << "good variables: " << good_var << endl;
-	cout << endl;
-	if(good_var < MIN_GOOD_VARS)	is_converged = false;
-	if(good_var >= MIN_GOOD_VARS && good_var < prev_good_var) is_converged = true;
-	if(good_var > MIN_GOOD_VARS)
-		prev_good_var = good_var;
 	return is_converged;
 }
 
@@ -426,22 +347,8 @@ void initialize_cpts()
 		list<Graph_Node>::iterator node_it = Alarm.get_nth_node(i);
 		int cpt_size = node_it->get_cpt_size();
 		int num_vals = node_it->get_nvalues();
-		cpt_size /= num_vals;
-		//float initial_prob_val = 1.0 / (node_it->get_nvalues());
-		//for (int i = 0; i < cpt_size; i++)	initial_cpt.push_back(initial_prob_val);
-		for(int k=0; k<num_vals-1; k++){
-			for(int j=0; j<cpt_size;j++){
-				float random = (float)(rand()/((double)RAND_MAX * (num_vals-1)));
-				initial_cpt.push_back(random);
-			}	
-		}
-		for(int j=0; j<cpt_size;j++){
-			float temp = 0;
-			for(int i=0; i<num_vals-1;i++){
-				temp += initial_cpt[j+(cpt_size * i)];
-			}
-			initial_cpt.push_back(1-temp);
-		}
+		float initial_prob_val = 1.0 / (node_it->get_nvalues());
+		for (int i = 0; i < cpt_size; i++)	initial_cpt.push_back(initial_prob_val);
 		Alarm.get_nth_node(i)->set_CPT(initial_cpt);
 	}
 }
@@ -508,9 +415,18 @@ void sample_missing_points() {
 	}
 }
 
+void random_start(){
+	for (int i = 0; i < missing.size(); i++){
+		pair<int, int> temp = missing[i];
+		int r_num = temp.first;
+		int var_num = temp.second;
+		int val = rand() % (Alarm.get_nth_node(var_num)->get_nvalues());
+		counts[r_num][var_num] = (Alarm.get_nth_node(var_num)->get_values())[val];
+	}
+}
 
 void parse_data_file(string filename, int num_vars) {
-	ifstream infile("records.dat");
+	ifstream infile(filename);
 	string val;
 	int ind = 0;
 	int record_num = 0;
@@ -526,7 +442,6 @@ void parse_data_file(string filename, int num_vars) {
 		temp.push_back(val);
 		if (ind == num_vars - 1) {
 			record_num++;
-			//cout << record_num << endl;
 			counts.push_back(temp);
 		}
 		ind = (ind + 1) % num_vars;
@@ -536,7 +451,7 @@ void parse_data_file(string filename, int num_vars) {
 }
 
 void write_final_output() {
-	ifstream infile("alarm.bif");
+	ifstream infile(network_file);
 	ofstream myfile;
 	myfile.open("solved_alarm.bif");
 	string line = "";
@@ -547,8 +462,9 @@ void write_final_output() {
 			myfile << line << "\n";
 	}
 	for (int i = 0; i < Alarm.netSize(); i++) {
-		myfile << line << "\n";
-		myfile << Alarm.print_nodes_cpt(Alarm,i) << "\n";
+		myfile << line << '\n';
+		string temp = Alarm.print_nodes_cpt(Alarm,i); 
+		myfile << temp  << '\n';
 		getline(infile, line);
 		getline(infile, line);
 		myfile << line << '\n';
@@ -560,23 +476,27 @@ void write_final_output() {
 
 int main(int argc, char *argv[])
 {
+	// start time
+	time_point<system_clock> start, current_time;
+	duration<double> elapsed_seconds;
+	start = system_clock::now();
+	network_file = argv[1];
 	Alarm = read_network();
-	Alarm.initialize_min_good_required_vars(MIN_GOOD_VAR_PERCENT);
-	string filename = "";
+	string filename = argv[2];
 	int num_vars = Alarm.netSize();
 	srand(time(0));
-	//	create_records_storage();
 	parse_data_file(filename, num_vars);
 	//appling em algorithm loop
 	bool is_converged = false;
-	int deleteThis=0;
-	while(not is_converged and (deleteThis <= 800))
+	while(true)
 	{
+		// checking timing condition
+		current_time = system_clock::now();
+		elapsed_seconds = current_time - start;
+		if(elapsed_seconds.count() >= 115)	break;
 		is_converged = compute_prob();
 		sample_missing_points();
-		deleteThis++;
-		cout << "iteration no: " << deleteThis << endl;
 	}
 	write_final_output();
-	cout << Alarm.evaluate() << endl;
+	return 0;
 }

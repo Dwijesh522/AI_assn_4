@@ -21,21 +21,18 @@ get_values	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	v
 Graph_Node	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	Graph_Node(string name, int n, vector<string> vals)$/;"	f	language:C++	class:Graph_Node
 Graph_Node	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^class Graph_Node {$/;"	c	language:C++	file:
 initialize_cpts	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^void initialize_cpts()$/;"	f	language:C++
-initialize_min_good_required_vars	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	void initialize_min_good_required_vars(int percent)$/;"	f	language:C++	class:network
-kl_divergence	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^bool kl_divergence(vector<float> old_cpt, vector<float> &new_cpt)				\/\/\/\/ ####$/;"	f	language:C++
 main	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^int main(int argc, char *argv[])$/;"	f	language:C++
-MAX_CHANGE	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^float MAX_CHANGE = 0.01;$/;"	v	language:C++
-MIN_GOOD_VARS	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^int MIN_GOOD_VARS = 0;$/;"	v	language:C++
-MIN_GOOD_VAR_PERCENT	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^int MIN_GOOD_VAR_PERCENT = 95;$/;"	v	language:C++
 missing	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^vector<pair<int, int> > missing;$/;"	v	language:C++
 netSize	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	int netSize()$/;"	f	language:C++	class:network
 network	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^class network {$/;"	c	language:C++	file:
+network_file	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^string network_file = "";$/;"	v	language:C++
 Node_Name	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	string Node_Name;  \/\/ Variable name $/;"	m	language:C++	class:Graph_Node	file:
 nvalues	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	int nvalues;  \/\/ Number of categories a variable represented by this node can take$/;"	m	language:C++	class:Graph_Node	file:
 Parents	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	vector<string> Parents; \/\/ Parents of a particular node- note these are names of parents$/;"	m	language:C++	class:Graph_Node	file:
 parse_data_file	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^void parse_data_file(string filename, int num_vars) {$/;"	f	language:C++
 Pres_Graph	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	list <Graph_Node> Pres_Graph;$/;"	m	language:C++	class:network	file:
 print_nodes_cpt	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	string print_nodes_cpt(network Alarm,int var_ind)$/;"	f	language:C++	class:network
+random_start	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^void random_start(){$/;"	f	language:C++
 read_network	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^network read_network()$/;"	f	language:C++
 sample_missing_points	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^void sample_missing_points() {$/;"	f	language:C++
 search_node	/home/dwijesh/Documents/sem5/ai/assns/assn4/AI_assn_4/Source.cpp	/^	list<Graph_Node>::iterator search_node(string val_name)$/;"	f	language:C++	class:network
